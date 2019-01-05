@@ -52,8 +52,8 @@ class Config(object):
 		self.learning_rate = 0.5
 		self.weight_decay = 1e-5
 		self.drop_prob = 0.5
-		self.checkpoint_dir = './checkpoint'
-		self.test_result_dir = './test_result'
+		self.checkpoint_dir = '../checkpoint'
+		self.test_result_dir = '../test_result'
 		self.save_epoch = 1
 		self.test_epoch = 1
 		self.pretrain_model = None
@@ -123,7 +123,7 @@ class Config(object):
 			self.data_train_scope = np.load(os.path.join(self.data_path, 'train_ins_scope.npy'))
 		print("Finish reading")
 		self.train_order = list(range(len(self.data_train_label)))
-		self.train_batches = len(self.data_train_label) / self.batch_size
+		self.train_batches = len(self.data_train_label) // self.batch_size
 		if len(self.data_train_label) % self.batch_size != 0:
 			self.train_batches += 1
 
@@ -141,7 +141,7 @@ class Config(object):
 			self.data_test_label = np.load(os.path.join(self.data_path, 'test_ins_label.npy'))
 			self.data_test_scope = np.load(os.path.join(self.data_path, 'test_ins_scope.npy'))
 		print("Finish reading")
-		self.test_batches = len(self.data_test_label) / self.batch_size
+		self.test_batches = len(self.data_test_label) // self.batch_size
 		if len(self.data_test_label) % self.batch_size != 0:
 			self.test_batches += 1
 
@@ -216,10 +216,10 @@ class Config(object):
 		self.optimizer.step()
 		for i, prediction in enumerate(_output):
 			if self.batch_label[i] == 0:
-				self.acc_NA.add(prediction == self.batch_label[i])
+				self.acc_NA.add(prediction.cpu().numpy() == self.batch_label[i])
 			else:
-				self.acc_not_NA.add(prediction == self.batch_label[i])
-			self.acc_total.add(prediction == self.batch_label[i])
+				self.acc_not_NA.add(prediction.cpu().numpy() == self.batch_label[i])
+			self.acc_total.add(prediction.cpu().numpy() == self.batch_label[i])
 		return loss.data[0]
 
 	def test_one_step(self):
