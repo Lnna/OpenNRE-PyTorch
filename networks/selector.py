@@ -33,6 +33,9 @@ class Attention(Selector):
 	def _attention_train_logit(self, x):
 		relation_query = self.relation_matrix(self.attention_query)
 		attention = self.attention_matrix(self.attention_query)
+		# print('x shape after cnn:{}'.format(x.shape))
+		# print('att query after embed:{}'.format(relation_query.shape))
+		# print('att after embed:{}'.format(attention.shape))
 		attention_logit = torch.sum(x * attention * relation_query, 1, True)
 		return attention_logit
 	def _attention_test_logit(self, x):

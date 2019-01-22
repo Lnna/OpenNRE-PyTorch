@@ -44,10 +44,14 @@ class PCNN(nn.Module):
 		self.cnn = _CNN(config)
 		self.pooling = _PiecewisePooling()
 		self.activation = nn.ReLU()
+
 	def forward(self, embedding):
 		embedding = torch.unsqueeze(embedding, dim = 1)
 		x = self.cnn(embedding)
+
 		x = self.pooling(x, self.mask, self.config.hidden_size)
+		# add by Ina Liu 20180117
+		x=torch.cat([x,self.config.batch_lstm_out],1)
 		return self.activation(x)
 
 class CNN(nn.Module):
@@ -61,4 +65,4 @@ class CNN(nn.Module):
 		embedding = torch.unsqueeze(embedding, dim = 1)
 		x = self.cnn(embedding)
 		x = self.pooling(x, self.config.hidden_size)
-		return self.activation(x)	
+		return self.activation(x)

@@ -37,13 +37,16 @@ class Config(object):
 		self.acc_NA = Accuracy()
 		self.acc_not_NA = Accuracy()
 		self.acc_total = Accuracy()
-		self.data_path = './data'
+		self.data_path = './mnre_data/data'
 		self.use_bag = True
 		self.use_gpu = True
 		self.is_training = True
 		self.max_length = 120
 		self.pos_num = 2 * self.max_length
-		self.num_classes = 53
+		#NYT
+		# self.num_classes = 53
+		# mnre
+		self.num_classes = 176
 		self.hidden_size = 230
 		self.pos_size = 5
 		self.max_epoch = 15
@@ -52,14 +55,14 @@ class Config(object):
 		self.learning_rate = 0.5
 		self.weight_decay = 1e-5
 		self.drop_prob = 0.5
-		self.checkpoint_dir = '../checkpoint'
-		self.test_result_dir = '../test_result'
+		self.checkpoint_dir = './checkpoint'
+		self.test_result_dir = './test_result'
 		self.save_epoch = 1
 		self.test_epoch = 1
 		self.pretrain_model = None
 		self.trainModel = None
 		self.testModel = None
-		self.batch_size = 160
+		self.batch_size = 60
 		self.word_size = 50
 		self.window_size = 3
 		self.epoch_range = None
@@ -106,7 +109,8 @@ class Config(object):
 		self.use_gpu = use_gpu
 	def set_epoch_range(self, epoch_range):
 		self.epoch_range = epoch_range
-	
+
+
 	def load_train_data(self):
 		print("Reading training data...")
 		self.data_word_vec = np.load(os.path.join(self.data_path, 'vec.npy'))
@@ -121,6 +125,9 @@ class Config(object):
 		else:
 			self.data_train_label = np.load(os.path.join(self.data_path, 'train_ins_label.npy'))
 			self.data_train_scope = np.load(os.path.join(self.data_path, 'train_ins_scope.npy'))
+
+		# add by Ina Liu 20180117
+		self.train_lstm_out=np.load(os.path.join(self.data_path,'big_stanford_train_lstm_out.npy'))
 		print("Finish reading")
 		self.train_order = list(range(len(self.data_train_label)))
 		self.train_batches = len(self.data_train_label) // self.batch_size
@@ -140,6 +147,9 @@ class Config(object):
 		else:
 			self.data_test_label = np.load(os.path.join(self.data_path, 'test_ins_label.npy'))
 			self.data_test_scope = np.load(os.path.join(self.data_path, 'test_ins_scope.npy'))
+
+		# add by Ina Liu 20180117
+		self.test_lstm_out=np.load(os.path.join(self.data_path,'big_stanford_test_lstm_out.npy'))
 		print("Finish reading")
 		self.test_batches = len(self.data_test_label) // self.batch_size
 		if len(self.data_test_label) % self.batch_size != 0:
@@ -186,8 +196,13 @@ class Config(object):
 		self.batch_pos2 = self.data_train_pos2[index, :]
 		self.batch_mask = self.data_train_mask[index, :]	
 		self.batch_label = np.take(self.data_train_label, self.train_order[batch * self.batch_size : (batch + 1) * self.batch_size], axis = 0)
+		# print('batch label shape {}'.format(self.batch_label.shape))
 		self.batch_attention_query = self.data_query_label[index]
 		self.batch_scope = scope
+
+		# add by Ina Liu 20180117
+		self.batch_lstm_out=Variable(torch.from_numpy(self.train_lstm_out[index,:]).float().cuda())
+		# print('batch lstm out shape:{}'.format(self.batch_lstm_out.shape))
 	
 	def get_test_batch(self, batch):
 		input_scope = self.data_test_scope[batch * self.batch_size : (batch + 1) * self.batch_size]
@@ -201,6 +216,10 @@ class Config(object):
 		self.batch_pos2 = self.data_test_pos2[index, :]
 		self.batch_mask = self.data_test_mask[index, :]
 		self.batch_scope = scope
+
+		# add by Ina Liu 20180117
+		self.batch_lstm_out=Variable(torch.from_numpy(self.test_lstm_out[index,:]).float().cuda())
+
 	def train_one_step(self):
 		self.trainModel.embedding.word = to_var(self.batch_word)
 		self.trainModel.embedding.pos1 = to_var(self.batch_pos1)
@@ -208,6 +227,7 @@ class Config(object):
 		self.trainModel.encoder.mask = to_var(self.batch_mask)
 		self.trainModel.selector.scope = self.batch_scope
 		self.trainModel.selector.attention_query = to_var(self.batch_attention_query)
+		# print('attention_query shape {}'.format(self.trainModel.selector.attention_query.shape))
 		self.trainModel.selector.label = to_var(self.batch_label)
 		self.trainModel.classifier.label = to_var(self.batch_label)
 		self.optimizer.zero_grad()

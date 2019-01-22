@@ -2,11 +2,11 @@ import numpy as np
 import os
 import json
 
-in_path = "./raw_data/"
-out_path = "./data"
+in_path = "./mnre_data/new_data/"
+out_path = "./mnre_data/data"
 case_sensitive = False
-if not os.path.exists('./data'):
-	os.mkdir('./data')
+if not os.path.exists(out_path):
+	os.mkdir(out_path)
 train_file_name = in_path + 'train.json'
 test_file_name = in_path + 'test.json'
 word_file_name = in_path + 'word_vec.json'
@@ -202,5 +202,5 @@ def init(file_name, word_vec_file_name, rel2id_file_name, max_length = 120, case
 	np.save(os.path.join(out_path, name_prefix + '_ins_scope.npy'), ins_scope)
 	print("Finish saving")		
 
-init(train_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
-init(test_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = False)
+# init(train_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
+init(test_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
