@@ -1,3 +1,22 @@
+# updated by Ina Liu 
+* 数据预处理
+ * 数据格式转换：mnre_transfer.py
+   将mnre数据处理成pcnn_att所需数据格式。
+        train_zh.txt    -> train.json
+        valid_zh.txt    -> valid.json
+        test_zh.txt     -> test.json
+        vec_zh.bin      -> word_vec.json
+        relation2id.txt -> rel2id.json
+ 
+ * 文本句法分析中间结果lstm out数据构造
+   由mParser生成中间结果，shape=(None,500)
+   输出存储为*_test_lstm_out.npy和*_train_lstm_out.npy
+   
+ * 读取lstm_out: Config.py
+ 
+* 模型修改
+ * concat(x_after_cnn,lstm_out): encoder.py PCNN_ATT.py
+
 # OpenNRE-PyTorch
 
 An open-source framework for neural relation extraction implemented in PyTorch.
