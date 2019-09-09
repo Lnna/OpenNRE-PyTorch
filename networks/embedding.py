@@ -28,9 +28,12 @@ class Embedding(nn.Module):
 		nn.init.xavier_uniform(self.pos2_embedding.weight.data)
 		if self.pos2_embedding.padding_idx is not None:
 			self.pos2_embedding.weight.data[self.pos2_embedding.padding_idx].fill_(0)
+
+
 	def forward(self):
 		word = self.word_embedding(self.word)
 		pos1 = self.pos1_embedding(self.pos1)
 		pos2 = self.pos2_embedding(self.pos2)
-		embedding = torch.cat((word, pos1, pos2), dim = 2)
+		# embedding = torch.cat((word, pos1, pos2), dim = 2)
+		embedding = torch.cat((word, pos1, pos2,self.config.batch_lstm_hs), dim = 2)
 		return embedding

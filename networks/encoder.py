@@ -11,7 +11,8 @@ class _CNN(nn.Module):
 		self.config = config
 		self.in_channels = 1
 		self.in_height = self.config.max_length
-		self.in_width = self.config.word_size + 2 * self.config.pos_size
+		# self.in_width = self.config.word_size + 2 * self.config.pos_size
+		self.in_width = self.config.word_size + 2 * self.config.pos_size+100
 		self.kernel_size = (self.config.window_size, self.in_width)
 		self.out_channels = self.config.hidden_size
 		self.stride = (1, 1)
@@ -25,6 +26,7 @@ class _PiecewisePooling(nn.Module):
 		super(_PiecewisePooling, self).__init__()
 	def forward(self, x, mask, hidden_size):
 		mask = torch.unsqueeze(mask, 1)
+		# print(x.shape)
 		x, _ = torch.max(mask + x, dim = 2)
 		x = x - 100
 		return x.view(-1, hidden_size * 3)
@@ -47,11 +49,12 @@ class PCNN(nn.Module):
 
 	def forward(self, embedding):
 		embedding = torch.unsqueeze(embedding, dim = 1)
+		# print(embedding.shape)
 		x = self.cnn(embedding)
 
 		x = self.pooling(x, self.mask, self.config.hidden_size)
 		# add by Ina Liu 20180117
-		x=torch.cat([x,self.config.batch_lstm_out],1)
+		# x=torch.cat([x,self.config.batch_lstm_out],1)
 		return self.activation(x)
 
 class CNN(nn.Module):

@@ -21,6 +21,7 @@ class Model(nn.Module):
 		embedding = self.embedding()
 		sen_embedding = self.encoder(embedding)
 		logits = self.selector(sen_embedding)
+		# print(logits)
 		return self.classifier(logits)
 	def test(self):
 		embedding = self.embedding()

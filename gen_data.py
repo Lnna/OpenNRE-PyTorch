@@ -1,9 +1,10 @@
 import numpy as np
 import os
 import json
+import time
 
-in_path = "./mnre_data/new_data/"
-out_path = "./mnre_data/data"
+in_path = "./mnre_data/176rels_data/new_data/"
+out_path = "./mnre_data/176rels_data/need_data/"
 case_sensitive = False
 if not os.path.exists(out_path):
 	os.mkdir(out_path)
@@ -11,6 +12,23 @@ train_file_name = in_path + 'train.json'
 test_file_name = in_path + 'test.json'
 word_file_name = in_path + 'word_vec.json'
 rel_file_name = in_path + 'rel2id.json'
+
+import logging
+from stanfordcorenlp.corenlp import StanfordCoreNLP
+
+class StanfordNlp(StanfordCoreNLP):
+    def __init__(self, path_or_host, port=None, memory='4g', lang='en', timeout=1500, quiet=True,
+                 logging_level=logging.WARNING):
+        super(StanfordNlp,self).__init__(path_or_host,lang=lang)
+    def pos_tag(self, sentence):
+        r_dict = self._request('pos', sentence)
+        words = []
+        tags = []
+        for s in r_dict['sentences']:
+            for token in s['tokens']:
+                words.append(token['word'])
+                tags.append(token['pos'])
+        return list(zip(words, tags))
 
 def find_pos(sentence, head, tail):
 	def find(sentence, entity):
@@ -91,6 +109,7 @@ def init(file_name, word_vec_file_name, rel2id_file_name, max_length = 120, case
 	print("Finish sorting")
 	
 	sen_tot = len(ori_data)
+	print('sentence totally:{}'.format(sen_tot))
 	sen_word = np.zeros((sen_tot, max_length), dtype = np.int64)
 	sen_pos1 = np.zeros((sen_tot, max_length), dtype = np.int64)
 	sen_pos2 = np.zeros((sen_tot, max_length), dtype = np.int64)
@@ -100,6 +119,10 @@ def init(file_name, word_vec_file_name, rel2id_file_name, max_length = 120, case
 	bag_label = []
 	bag_scope = []
 	bag_key = []
+
+	# add by Ina Liu 20190211
+	nlp = StanfordNlp(r'/home/nana/Documents/stanford-corenlp-full-2016-10-31/', lang='zh')
+	lstm_words=[]
 	for i in range(len(ori_data)):
 		if  i%1000 == 0:
 			print(i)
@@ -110,6 +133,20 @@ def init(file_name, word_vec_file_name, rel2id_file_name, max_length = 120, case
 		else:
 			sen_label[i] = rel2id['NA']
 		words = sen['sentence'].split()
+
+		# add by Ina liu by 20190211
+		flg=True
+		while flg:
+			try:
+				s=nlp.pos_tag(sen['sentence'])
+				flg=False
+			except:
+				print('connection error sleep 60s')
+				time.sleep(60)
+
+			lstm_words.append([(j, i) for i, j in s])
+
+
 		# sen_len
 		sen_len[i] = min(len(words), max_length)
 		# sen_word
@@ -200,7 +237,9 @@ def init(file_name, word_vec_file_name, rel2id_file_name, max_length = 120, case
 	np.save(os.path.join(out_path, name_prefix + '_bag_scope.npy'), bag_scope)
 	np.save(os.path.join(out_path, name_prefix + '_ins_label.npy'), ins_label)
 	np.save(os.path.join(out_path, name_prefix + '_ins_scope.npy'), ins_scope)
+
+	np.save(os.path.join(out_path,name_prefix+'_posseg.npy'),lstm_words)
 	print("Finish saving")		
 
-# init(train_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
-init(test_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
+init(train_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = True)
+init(test_file_name, word_file_name, rel_file_name, max_length = 120, case_sensitive = False, is_training = False)

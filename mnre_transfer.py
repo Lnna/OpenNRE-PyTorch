@@ -47,13 +47,13 @@ def wordvec2json(wordvec_path, new_path,json_path):
 
 
 
-mnre_dir=path.join(path.dirname(__file__),'mnre_data/')
+mnre_dir=path.join(path.dirname(__file__),'mnre_data/new_data')
 
-# rel2id=relid2json(path.join(mnre_dir,'relation2id.txt'),path.join(mnre_dir, 'new_data','rel2id.json'))
+# rel2id=relid2json(path.join(mnre_dir,'relation2id.txt'),path.join(mnre_dir, 'json_data','rel2id.json'))
 
-# samples2json(path.join(mnre_dir,'train_zh.txt'),path.join(mnre_dir, 'new_data', 'train.json'))
+# samples2json(path.join(mnre_dir,'train_zh.txt'),path.join(mnre_dir, 'json_data', 'train.json'))
 # samples2json(path.join(mnre_dir,'try.txt'),path.join(mnre_dir, 'new_data', 'valid.json'))
-# samples2json(path.join(mnre_dir,'valid_zh.txt'),path.join(mnre_dir, 'new_data', 'valid.json'))
-# samples2json(path.join(mnre_dir,'test_zh.txt'),path.join(mnre_dir, 'new_data', 'test.json'))
+# samples2json(path.join(mnre_dir,'valid_zh.txt'),path.join(mnre_dir, 'json_data', 'valid.json'))
+# samples2json(path.join(mnre_dir,'test_zh.txt'),path.join(mnre_dir, 'json_data', 'test.json'))
 
-wordvec2json(path.join(mnre_dir,'vec_zh.bin'), path.join(mnre_dir, 'new_data', 'word_vec.txt'),path.join(mnre_dir, 'new_data', 'word_vec.json'))
+wordvec2json(path.join(mnre_dir,'vec_zh.bin'), path.join(mnre_dir,  'word_vec.txt'),path.join(mnre_dir, 'word_vec.json'))

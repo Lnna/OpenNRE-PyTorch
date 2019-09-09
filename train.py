@@ -12,8 +12,10 @@ import sys
 import os
 import argparse
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-os.environ['CUDA_LAUNCH_BLOCKING']='1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+# os.environ['CUDA_CACHE_PATH']='/home/nana/cudacache'
+# CUDA_CACHE_PATH='/home/lnn/cudacache'
+# os.environ['CUDA_LAUNCH_BLOCKING']='1'
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', type = str, default = 'pcnn_att', help = 'name of the model')
 args = parser.parse_args()
@@ -26,7 +28,7 @@ model = {
 	'cnn_ave': models.CNN_AVE
 }
 con = config.Config()
-con.set_max_epoch(15)
+con.set_max_epoch(30)
 con.load_train_data()
 con.load_test_data()
 con.set_train_model(model[args.model_name])
