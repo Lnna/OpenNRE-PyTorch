@@ -420,9 +420,9 @@ class Config(object):
             correct += item[0]
             pr_y.append(float(correct) / (i + 1))
             pr_x.append(float(correct) / self.total_recall)
-            if pr_x[-1] > 0.60:
-                print(item[1])
-                print(pr_y[-1])
+            # if pr_x[-1] > 0.60:
+            #     print(item[1])
+            #     print(pr_y[-1])
         auc = sklearn.metrics.auc(x = pr_x, y = pr_y)
         print("auc: ", auc)
         return auc, pr_x, pr_y
