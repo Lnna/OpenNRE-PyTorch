@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 
-result_dir = './mnre_data/176rels_data/test_result'
+result_dir = './mnre_data/176rels_data/f189_test_result'
 
 def main():
 	models = sys.argv[1:]
@@ -20,8 +20,8 @@ def main():
 	
 	plt.xlabel('Recall')
 	plt.ylabel('Precision')
-	plt.ylim(0.3, 1.0)
-	plt.xlim(0.0, 1.0)
+	plt.ylim(0.0, 1.0)
+	plt.xlim(0.0, 0.8)
 	plt.title('Precision-Recall')
 	plt.legend(loc = "upper right")
 	plt.grid(True)

@@ -64,7 +64,7 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/f189_checkpoint'
+        self.checkpoint_dir = './mnre_data/176rels_data/origin_checkpoint'
         self.test_result_dir = './mnre_data/176rels_data/f189_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
@@ -219,26 +219,26 @@ class Config(object):
         # print('batch lstm out shape:{}'.format(self.batch_lstm_out.shape))
         # add by Ina Liu 20190313
 
-        self.batch_lstm_hs=[]
-        # Ina Liu 20190508
-        # now = time.time()
-        lstm_mod=1000
-        lstm_dir='/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
-        tmp=dict()
-        # lstm_dic=pc.load(open(os.path.join(lstm_dir,'train_{}.pc'.format(1)),mode='rb'))
-
-        for i in index:
-            tlist=tmp.get(i//lstm_mod+1,[])
-            tlist.append(i)
-            tmp[i//lstm_mod+1]=tlist
-
-        batch_dict=dict()
-        for k,v in tmp.items():
-            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'train_{}.pc'.format(k)), mode='rb'))
-            for i in v:
-                batch_dict[i]=lstm_dic[i]
-        for i in index:
-            self.batch_lstm_hs.append(batch_dict[i])
+        # self.batch_lstm_hs=[]
+        # # Ina Liu 20190508
+        # # now = time.time()
+        # lstm_mod=1000
+        # lstm_dir='/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        # tmp=dict()
+        # # lstm_dic=pc.load(open(os.path.join(lstm_dir,'train_{}.pc'.format(1)),mode='rb'))
+        #
+        # for i in index:
+        #     tlist=tmp.get(i//lstm_mod+1,[])
+        #     tlist.append(i)
+        #     tmp[i//lstm_mod+1]=tlist
+        #
+        # batch_dict=dict()
+        # for k,v in tmp.items():
+        #     lstm_dic = pc.load(open(os.path.join(lstm_dir, 'train_{}.pc'.format(k)), mode='rb'))
+        #     for i in v:
+        #         batch_dict[i]=lstm_dic[i]
+        # for i in index:
+        #     self.batch_lstm_hs.append(batch_dict[i])
 
 
 
@@ -265,7 +265,7 @@ class Config(object):
         #     print("one batch lstm spend time {}".format(time.time()-now))
         #     np.save(lstm_path,self.batch_lstm_hs)
         # print('batch {}'.format(batch))
-        self.batch_lstm_hs=Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
+        # self.batch_lstm_hs=Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
 
 
     def get_test_batch(self, batch):
@@ -284,22 +284,22 @@ class Config(object):
         # add by Ina Liu 20180117
         # self.batch_lstm_out=Variable(torch.from_numpy(self.test_lstm_out[index,:]).float().cuda())
         # add by Ina Liu 20190313
-        self.batch_lstm_hs = []
-        lstm_mod = 1000
-        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
-        tmp = dict()
-        for i in index:
-            tlist = tmp.get(i // lstm_mod + 1, [])
-            tlist.append(i)
-            tmp[i // lstm_mod + 1] = tlist
-
-        batch_dict = dict()
-        for k, v in tmp.items():
-            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'test_{}.pc'.format(k)), mode='rb'))
-            for i in v:
-                batch_dict[i] = lstm_dic[i]
-        for i in index:
-            self.batch_lstm_hs.append(batch_dict[i])
+        # self.batch_lstm_hs = []
+        # lstm_mod = 1000
+        # lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        # tmp = dict()
+        # for i in index:
+        #     tlist = tmp.get(i // lstm_mod + 1, [])
+        #     tlist.append(i)
+        #     tmp[i // lstm_mod + 1] = tlist
+        #
+        # batch_dict = dict()
+        # for k, v in tmp.items():
+        #     lstm_dic = pc.load(open(os.path.join(lstm_dir, 'test_{}.pc'.format(k)), mode='rb'))
+        #     for i in v:
+        #         batch_dict[i] = lstm_dic[i]
+        # for i in index:
+        #     self.batch_lstm_hs.append(batch_dict[i])
 
 
         # lstm_path='{}test_batch{}.npy'.format('/home/nana/Documents/pycharmforlinux/opennre-pytorch/mnre_data/thesis_data/lstm_parse/',str(batch))
@@ -318,7 +318,7 @@ class Config(object):
         #         self.batch_lstm_hs.append(res)
         #     np.save(lstm_path, self.batch_lstm_hs)
         # self.batch_lstm_hs = Variable(torch.from_numpy(self.batch_lstm_hs).float().cuda())
-        self.batch_lstm_hs = Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
+        # self.batch_lstm_hs = Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
 
     def train_one_step(self):
         self.trainModel.embedding.word = to_var(self.batch_word)
@@ -420,9 +420,9 @@ class Config(object):
             correct += item[0]
             pr_y.append(float(correct) / (i + 1))
             pr_x.append(float(correct) / self.total_recall)
-            if pr_x[-1] > 0.60:
-                print(item[1])
-                print(pr_y[-1])
+            # if pr_x[-1] > 0.60:
+                # print(item[1])
+                # print(pr_y[-1])
         auc = sklearn.metrics.auc(x = pr_x, y = pr_y)
         print("auc: ", auc)
         return auc, pr_x, pr_y
