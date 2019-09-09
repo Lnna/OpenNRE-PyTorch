@@ -64,8 +64,8 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/f189_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/f189_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/f187_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/f187_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
@@ -223,7 +223,7 @@ class Config(object):
         # Ina Liu 20190508
         # now = time.time()
         lstm_mod=1000
-        lstm_dir='/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        lstm_dir='/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f187_lstm_parse'
         tmp=dict()
         # lstm_dic=pc.load(open(os.path.join(lstm_dir,'train_{}.pc'.format(1)),mode='rb'))
 
@@ -286,7 +286,7 @@ class Config(object):
         # add by Ina Liu 20190313
         self.batch_lstm_hs = []
         lstm_mod = 1000
-        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f187_lstm_parse'
         tmp = dict()
         for i in index:
             tlist = tmp.get(i // lstm_mod + 1, [])
