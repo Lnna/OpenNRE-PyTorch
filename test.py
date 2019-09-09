@@ -23,9 +23,9 @@ model = {
 	'cnn_ave': models.CNN_AVE
 }
 con = config.Config()
-con.set_max_epoch(27)
+con.set_max_epoch(30)
 con.load_test_data()
 con.set_test_model(model[args.model_name])
-con.set_epoch_range(list(range(27,28)))
-# con.test()
-con.predict(27,store_path='lstm_predict')
+con.set_epoch_range(list(range(10,15)))
+con.test()
+# con.predict(30,store_path='lstm_predict')
