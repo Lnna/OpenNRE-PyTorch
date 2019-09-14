@@ -64,7 +64,7 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/origin_checkpoint'
+        self.checkpoint_dir = './mnre_data/176rels_data/test_origin_checkpoint'
         self.test_result_dir = './mnre_data/176rels_data/f189_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
