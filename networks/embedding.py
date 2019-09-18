@@ -31,7 +31,9 @@ class Embedding(nn.Module):
 
 
 	def forward(self):
-		embedding=self.config.batch_bert
+		word = self.word_embedding(self.word)
+		pos1 = self.pos1_embedding(self.pos1)
+		pos2 = self.pos2_embedding(self.pos2)
 		# print(embedding.size())
-		# embedding = torch.cat((word, pos1, pos2,self.config.batch_lstm_hs), dim = 2)
+		embedding = torch.cat((word, pos1, pos2), dim = 2)
 		return embedding

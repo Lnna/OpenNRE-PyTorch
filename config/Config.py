@@ -66,8 +66,8 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/bert_origin_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/bert_origin_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/bert_pcnnatt_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/bert_pcnnatt_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
@@ -240,7 +240,7 @@ class Config(object):
             # 得到每一层的 hidden states
             with torch.no_grad():
                 encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
-            self.batch_bert.append(encoded_layers)
+            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
         self.batch_bert=Variable(torch.cat(self.batch_bert,dim=0))
     def get_test_batch(self, batch):
         input_scope = self.data_test_scope[batch * self.batch_size : (batch + 1) * self.batch_size]

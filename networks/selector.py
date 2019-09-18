@@ -35,9 +35,8 @@ class Attention(Selector):
 		# print(self.attention_query.size())
 		relation_query = self.relation_matrix(self.attention_query)
 		attention = self.attention_matrix(self.attention_query)
-		# print('x shape after cnn:{}'.format(x.shape))
-		# print('att query after embed:{}'.format(relation_query.shape))
-		# print('att after embed:{}'.format(attention.shape))
+		# print("attention size")
+		# print(attention.size())
 		attention_logit = torch.sum(x * attention * relation_query, 1, True)
 		return attention_logit
 	def _attention_test_logit(self, x):
@@ -53,6 +52,8 @@ class Attention(Selector):
 			tower_repre.append(final_repre)
 		stack_repre = torch.stack(tower_repre)
 		stack_repre = self.dropout(stack_repre)
+		# print("stack_repre")
+		# print(stack_repre.size())
 		logits = self.get_logits(stack_repre)
 		return logits
 	def test(self, x):
