@@ -64,8 +64,8 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/test_origin_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/f189_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/origin_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/origin_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
@@ -358,6 +358,7 @@ class Config(object):
             os.mkdir(self.checkpoint_dir)
         else:
             self.cur_epoch=15
+            # print(self.checkpoint_dir)
             model_path=os.path.join(self.checkpoint_dir, self.model.__name__ + '-' + str(self.cur_epoch-1))
             self.trainModel.load_state_dict(torch.load(model_path))
         best_auc = 0.0

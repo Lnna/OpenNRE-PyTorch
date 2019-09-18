@@ -49,13 +49,13 @@ class PCNN(nn.Module):
 
 	def forward(self, embedding):
 		embedding = torch.unsqueeze(embedding, dim = 1)
-		print(embedding.size())
+		# print(embedding.size())
 		x = self.cnn(embedding)
 
 		x = self.pooling(x, self.mask, self.config.hidden_size)
 		# add by Ina Liu 20180117
 		# x=torch.cat([x,self.config.batch_lstm_out],1)
-		print(x.size())
+		# print(x.size())
 		return self.activation(x)
 
 class CNN(nn.Module):
