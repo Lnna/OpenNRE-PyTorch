@@ -280,7 +280,7 @@ class Config(object):
             # 得到每一层的 hidden states
             with torch.no_grad():
                 encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
-            self.batch_bert.append(encoded_layers)
+            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
         self.batch_bert = Variable(torch.cat(self.batch_bert, dim=0))
 
     def train_one_step(self):
@@ -320,7 +320,7 @@ class Config(object):
         if not os.path.exists(self.checkpoint_dir):
             os.mkdir(self.checkpoint_dir)
         else:
-            self.cur_epoch=15
+            self.cur_epoch=1
             model_path=os.path.join(self.checkpoint_dir, self.model.__name__ + '-' + str(self.cur_epoch-1))
             self.trainModel.load_state_dict(torch.load(model_path))
         best_auc = 0.0
