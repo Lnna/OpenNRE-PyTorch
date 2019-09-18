@@ -1,6 +1,6 @@
 import torch
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
-
+from pytorch_pretrained_bert import BertTokenizer, BertModel
+print([[0]*5]*5)
 # 加载词典 pre-trained model tokenizer (vocabulary)
 tokenizer = BertTokenizer.from_pretrained('/media/sda1/nana/bert-rel/chinese_L-12_H-768_A-12')
 

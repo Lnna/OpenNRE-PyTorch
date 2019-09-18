@@ -6,7 +6,8 @@ import numpy as np
 import sys
 import os
 
-result_dir = './mnre_data/176rels_data/f189_test_result'
+# result_dir = './mnre_data/176rels_data/f189_test_result'
+result_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/bert_origin_test_result'
 
 def main():
 	models = sys.argv[1:]

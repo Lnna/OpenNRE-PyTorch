@@ -31,6 +31,8 @@ class Selector(nn.Module):
 
 class Attention(Selector):
 	def _attention_train_logit(self, x):
+		# print("attention-query")
+		# print(self.attention_query.size())
 		relation_query = self.relation_matrix(self.attention_query)
 		attention = self.attention_matrix(self.attention_query)
 		# print('x shape after cnn:{}'.format(x.shape))

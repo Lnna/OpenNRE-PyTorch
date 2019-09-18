@@ -11,7 +11,7 @@ class _CNN(nn.Module):
 		self.config = config
 		self.in_channels = 1
 		self.in_height = self.config.max_length
-		self.in_width = self.config.word_size + 2 * self.config.pos_size
+		self.in_width = 768
 		# self.in_width = self.config.word_size + 2 * self.config.pos_size+100
 		self.kernel_size = (self.config.window_size, self.in_width)
 		self.out_channels = self.config.hidden_size
@@ -55,7 +55,7 @@ class PCNN(nn.Module):
 		x = self.pooling(x, self.mask, self.config.hidden_size)
 		# add by Ina Liu 20180117
 		# x=torch.cat([x,self.config.batch_lstm_out],1)
-		print(x.size())
+		# print(x.size())
 		return self.activation(x)
 
 class CNN(nn.Module):

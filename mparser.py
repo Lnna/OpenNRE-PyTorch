@@ -12,12 +12,12 @@ max_length=120
 train_posseg=np.load(os.path.join(data_dir, 'train_posseg.npy'))
 
 lstm_dict=dict()
-ct=0
+ct=714000
 mod=1000
 lstm_parse_dir=os.path.join(data_dir,'f185_lstm_parse')
 if not os.path.exists(lstm_parse_dir):
     os.mkdir(lstm_parse_dir)
-for i in range(0,len(train_posseg)):
+for i in range(714000,len(train_posseg)):
     line = train_posseg[i]
 
     line = [tuple(i) for i in line]
