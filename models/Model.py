@@ -20,6 +20,8 @@ class Model(nn.Module):
 	def forward(self):
 		embedding = self.embedding()
 		sen_embedding = self.encoder(embedding)
+		# print("sen_embedding: ")
+		# print(sen_embedding.size())
 		logits = self.selector(sen_embedding)
 		# print(logits)
 		return self.classifier(logits)

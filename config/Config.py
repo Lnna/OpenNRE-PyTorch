@@ -12,6 +12,8 @@ import sys
 import sklearn.metrics
 from tqdm import tqdm
 import pickle as pc
+from pytorch_pretrained_bert import BertTokenizer, BertModel
+
 # sys.path.append('/home/nana/Documents/pycharmforlinux/mParser')
 # sys.path.append('/home/lnn/Documents/private/mParser')
 # from src.gen_mediate_para import hs_parse
@@ -64,17 +66,23 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/f187_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/f187_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/bert_pcnnatt_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/bert_pcnnatt_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
         self.trainModel = None
         self.testModel = None
-        self.batch_size = 60
+        self.batch_size = 30
         self.word_size = 50
         self.window_size = 3
         self.epoch_range = None
+        self.tokenizer = BertTokenizer.from_pretrained('/media/sda1/nana/bert-rel/chinese_L-12_H-768_A-12')
+        self.bert_model = BertModel.from_pretrained('/media/sda1/nana/bert-rel/')
+        self.bert_model.eval()
+        self.bert_model.to(device)
+
+
     def set_data_path(self, data_path):
         self.data_path = data_path
     def set_max_length(self, max_length):
@@ -135,10 +143,7 @@ class Config(object):
             self.data_train_label = np.load(os.path.join(self.data_path, 'train_ins_label.npy'))
             self.data_train_scope = np.load(os.path.join(self.data_path, 'train_ins_scope.npy'))
 
-        # add by Ina Liu 20180117
-        # self.train_lstm_out=np.load(os.path.join(self.data_path,'big_stanford_train_lstm_out.npy'))
-        # add by Ina Liu 20190211
-        # self.train_posseg=np.load(os.path.join(self.data_path, 'train_posseg.npy'))
+        self.train_sentences=np.load(os.path.join(self.data_path,'train_sentences.npy'))
 
         print("Finish reading")
         self.train_order = list(range(len(self.data_train_label)))
@@ -160,10 +165,8 @@ class Config(object):
             self.data_test_label = np.load(os.path.join(self.data_path, 'test_ins_label.npy'))
             self.data_test_scope = np.load(os.path.join(self.data_path, 'test_ins_scope.npy'))
 
-        # add by Ina Liu 20180117
-        # self.test_lstm_out=np.load(os.path.join(self.data_path,'big_stanford_test_lstm_out.npy'))
-        # add by Ina Liu 20190211
-        # self.test_posseg = np.load(os.path.join(self.data_path, 'test_posseg.npy'))
+        self.test_sentences=np.load(os.path.join(self.data_path,'test_sentences.npy'))
+
         print("Finish reading")
         self.test_batches = len(self.data_test_label) // self.batch_size
         if len(self.data_test_label) % self.batch_size != 0:
@@ -214,60 +217,31 @@ class Config(object):
         self.batch_attention_query = self.data_query_label[index]
         self.batch_scope = scope
 
-        # add by Ina Liu 20180117
-        # self.batch_lstm_out=Variable(torch.from_numpy(self.train_lstm_out[index,:]).float().cuda())
-        # print('batch lstm out shape:{}'.format(self.batch_lstm_out.shape))
-        # add by Ina Liu 20190313
+        batch_sentences=self.train_sentences[index]
+        self.batch_bert =[]
+        for sen in batch_sentences:
+            tokenized_text = self.tokenizer.tokenize(sen)
+            if len(tokenized_text)<self.max_length:
+                tokenized_text.extend(['[PAD]']*(self.max_length-len(tokenized_text)))
+            else:
+                tokenized_text=tokenized_text[:self.max_length]
+            indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
 
-        self.batch_lstm_hs=[]
-        # Ina Liu 20190508
-        # now = time.time()
-        lstm_mod=1000
-        lstm_dir='/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f187_lstm_parse'
-        tmp=dict()
-        # lstm_dic=pc.load(open(os.path.join(lstm_dir,'train_{}.pc'.format(1)),mode='rb'))
+            segments_ids = [0]*self.max_length
 
-        for i in index:
-            tlist=tmp.get(i//lstm_mod+1,[])
-            tlist.append(i)
-            tmp[i//lstm_mod+1]=tlist
+            # 将 inputs 转为 PyTorch tensors
+            tokens_tensor = torch.tensor([indexed_tokens])
+            # print(tokens_tensor.size())
+            segments_tensors = torch.tensor([segments_ids])
+            # print(segments_tensors.size())
+            tokens_tensor = tokens_tensor.to(device)
+            segments_tensors = segments_tensors.to(device)
 
-        batch_dict=dict()
-        for k,v in tmp.items():
-            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'train_{}.pc'.format(k)), mode='rb'))
-            for i in v:
-                batch_dict[i]=lstm_dic[i]
-        for i in index:
-            self.batch_lstm_hs.append(batch_dict[i])
-
-
-
-        #Ina Liu 20190507
-        # for i in index:
-        #     lstm_dic=pc.load(open(os.path.join(lstm_dir,'train_{}.pc'.format(i//lstm_mod+1)),mode='rb'))
-        #     self.batch_lstm_hs.append(lstm_dic[i])
-        # print("one batch lstm spend time {}".format(time.time() - now))
-        # lstm_path='{}train_batch{}.npy'.format('/home/nana/Documents/pycharmforlinux/opennre-pytorch/mnre_data/thesis_data/lstm_parse/',str(batch))
-        #
-        # if os.path.exists(lstm_path):
-        #     self.batch_lstm_hs=np.load(lstm_path)
-        # else:
-        #     now=time.time()
-        #     for i in index:
-        #         line=self.train_posseg[i]
-        #         line = [tuple(i) for i in line]
-        #         res=hs_parse(line)
-        #         if len(res)<self.max_length:
-        #             res=np.vstack((res,np.zeros((self.max_length-len(res),100))))
-        #         else:
-        #             res=res[:self.max_length]
-        #         self.batch_lstm_hs.append(res)
-        #     print("one batch lstm spend time {}".format(time.time()-now))
-        #     np.save(lstm_path,self.batch_lstm_hs)
-        # print('batch {}'.format(batch))
-        self.batch_lstm_hs=Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
-
-
+            # 得到每一层的 hidden states
+            with torch.no_grad():
+                encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
+            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
+        self.batch_bert=Variable(torch.cat(self.batch_bert,dim=0))
     def get_test_batch(self, batch):
         input_scope = self.data_test_scope[batch * self.batch_size : (batch + 1) * self.batch_size]
         index = []
@@ -281,44 +255,34 @@ class Config(object):
         self.batch_mask = self.data_test_mask[index, :]
         self.batch_scope = scope
 
-        # add by Ina Liu 20180117
-        # self.batch_lstm_out=Variable(torch.from_numpy(self.test_lstm_out[index,:]).float().cuda())
-        # add by Ina Liu 20190313
-        self.batch_lstm_hs = []
-        lstm_mod = 1000
-        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f187_lstm_parse'
-        tmp = dict()
-        for i in index:
-            tlist = tmp.get(i // lstm_mod + 1, [])
-            tlist.append(i)
-            tmp[i // lstm_mod + 1] = tlist
 
-        batch_dict = dict()
-        for k, v in tmp.items():
-            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'test_{}.pc'.format(k)), mode='rb'))
-            for i in v:
-                batch_dict[i] = lstm_dic[i]
-        for i in index:
-            self.batch_lstm_hs.append(batch_dict[i])
+        batch_sentences = self.test_sentences[index]
+        self.batch_bert = []
+        # print("batch_sentences")
+        # print(len(batch_sentences))
+        for sen in batch_sentences:
+            tokenized_text = self.tokenizer.tokenize(sen)
+            if len(tokenized_text) < self.max_length:
+                tokenized_text.extend(['[PAD]'] * (self.max_length - len(tokenized_text)))
+            else:
+                tokenized_text = tokenized_text[:self.max_length]
+            indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
 
+            segments_ids = [0] * self.max_length
 
-        # lstm_path='{}test_batch{}.npy'.format('/home/nana/Documents/pycharmforlinux/opennre-pytorch/mnre_data/thesis_data/lstm_parse/',str(batch))
-        #
-        # if os.path.exists(lstm_path):
-        #     self.batch_lstm_hs = np.load(lstm_path)
-        # else:
-        #     for i in index:
-        #         line = self.train_posseg[i]
-        #         line = [tuple(i) for i in line]
-        #         res = hs_parse(line)
-        #         if len(res) < self.max_length:
-        #             res = np.vstack((res, np.zeros((self.max_length - len(res), 100))))
-        #         else:
-        #             res = res[:self.max_length]
-        #         self.batch_lstm_hs.append(res)
-        #     np.save(lstm_path, self.batch_lstm_hs)
-        # self.batch_lstm_hs = Variable(torch.from_numpy(self.batch_lstm_hs).float().cuda())
-        self.batch_lstm_hs = Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
+            # 将 inputs 转为 PyTorch tensors
+            tokens_tensor = torch.tensor([indexed_tokens])
+            # print(tokens_tensor.size())
+            segments_tensors = torch.tensor([segments_ids])
+            # print(segments_tensors.size())
+            tokens_tensor = tokens_tensor.to(device)
+            segments_tensors = segments_tensors.to(device)
+
+            # 得到每一层的 hidden states
+            with torch.no_grad():
+                encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
+            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
+        self.batch_bert = Variable(torch.cat(self.batch_bert, dim=0))
 
     def train_one_step(self):
         self.trainModel.embedding.word = to_var(self.batch_word)
@@ -357,7 +321,7 @@ class Config(object):
         if not os.path.exists(self.checkpoint_dir):
             os.mkdir(self.checkpoint_dir)
         else:
-            self.cur_epoch=15
+            self.cur_epoch=1
             model_path=os.path.join(self.checkpoint_dir, self.model.__name__ + '-' + str(self.cur_epoch-1))
             self.trainModel.load_state_dict(torch.load(model_path))
         best_auc = 0.0
@@ -421,8 +385,6 @@ class Config(object):
             pr_y.append(float(correct) / (i + 1))
             pr_x.append(float(correct) / self.total_recall)
             # if pr_x[-1] > 0.60:
-            #     print(item[1])
-            #     print(pr_y[-1])
         auc = sklearn.metrics.auc(x = pr_x, y = pr_y)
         print("auc: ", auc)
         return auc, pr_x, pr_y
