@@ -66,8 +66,8 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/bert_pcnnatt_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/bert_pcnnatt_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/merge_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/merge_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
@@ -217,6 +217,24 @@ class Config(object):
         self.batch_attention_query = self.data_query_label[index]
         self.batch_scope = scope
 
+        self.batch_lstm_hs = []
+        lstm_mod = 1000
+        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        tmp = dict()
+        for i in index:
+            tlist = tmp.get(i // lstm_mod + 1, [])
+            tlist.append(i)
+            tmp[i // lstm_mod + 1] = tlist
+
+        batch_dict = dict()
+        for k, v in tmp.items():
+            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'train_{}.pc'.format(k)), mode='rb'))
+            for i in v:
+                batch_dict[i] = lstm_dic[i]
+        for i in index:
+            self.batch_lstm_hs.append(batch_dict[i])
+        self.batch_lstm_hs = Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
+
         batch_sentences=self.train_sentences[index]
         self.batch_bert =[]
         for sen in batch_sentences:
@@ -255,6 +273,24 @@ class Config(object):
         self.batch_mask = self.data_test_mask[index, :]
         self.batch_scope = scope
 
+        self.batch_lstm_hs = []
+        lstm_mod = 1000
+        lstm_dir = '/media/sda1/nana/opennre-pytorch/mnre_data/176rels_data/need_data/f189_lstm_parse'
+        tmp = dict()
+        for i in index:
+            tlist = tmp.get(i // lstm_mod + 1, [])
+            tlist.append(i)
+            tmp[i // lstm_mod + 1] = tlist
+
+        batch_dict = dict()
+        for k, v in tmp.items():
+            lstm_dic = pc.load(open(os.path.join(lstm_dir, 'test_{}.pc'.format(k)), mode='rb'))
+            for i in v:
+                batch_dict[i] = lstm_dic[i]
+        for i in index:
+            self.batch_lstm_hs.append(batch_dict[i])
+
+        self.batch_lstm_hs = Variable(torch.from_numpy(np.array(self.batch_lstm_hs)).float().to(device))
 
         batch_sentences = self.test_sentences[index]
         self.batch_bert = []
