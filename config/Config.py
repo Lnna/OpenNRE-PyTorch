@@ -19,7 +19,7 @@ from pytorch_pretrained_bert import BertTokenizer, BertModel
 # from src.gen_mediate_para import hs_parse
 # print(hs_parse([('NN','人们'),('VV','爱'),('NN','小明')]))
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0,1" if torch.cuda.is_available() else "cpu")
 # device="cpu"
 # torch.cuda.set_device(0)
 def to_var(x):

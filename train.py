@@ -28,11 +28,7 @@ model = {
 	'cnn_ave': models.CNN_AVE
 }
 con = config.Config()
-<<<<<<< HEAD
-con.set_max_epoch(20)
-=======
 con.set_max_epoch(15)
->>>>>>> bert
 con.load_train_data()
 con.load_test_data()
 con.set_train_model(model[args.model_name])
