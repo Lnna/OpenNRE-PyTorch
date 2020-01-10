@@ -19,7 +19,7 @@ from pytorch_pretrained_bert import BertTokenizer, BertModel
 # from src.gen_mediate_para import hs_parse
 # print(hs_parse([('NN','人们'),('VV','爱'),('NN','小明')]))
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device="cpu"
 # torch.cuda.set_device(0)
 def to_var(x):
@@ -66,14 +66,14 @@ class Config(object):
         self.learning_rate = 0.1
         self.weight_decay = 1e-5
         self.drop_prob = 0.5
-        self.checkpoint_dir = './mnre_data/176rels_data/bert_pcnnatt_checkpoint'
-        self.test_result_dir = './mnre_data/176rels_data/bert_pcnnatt_test_result'
+        self.checkpoint_dir = './mnre_data/176rels_data/new_bert_checkpoint'
+        self.test_result_dir = './mnre_data/176rels_data/new_bert_test_result'
         self.save_epoch = 1
         self.test_epoch = 1
         self.pretrain_model = None
         self.trainModel = None
         self.testModel = None
-        self.batch_size = 30
+        self.batch_size = 10
         self.word_size = 50
         self.window_size = 3
         self.epoch_range = None
@@ -219,29 +219,30 @@ class Config(object):
 
         batch_sentences=self.train_sentences[index]
         self.batch_bert =[]
+        indexed_tokens=[]
+        segments_ids=[]
         for sen in batch_sentences:
             tokenized_text = self.tokenizer.tokenize(sen)
             if len(tokenized_text)<self.max_length:
                 tokenized_text.extend(['[PAD]']*(self.max_length-len(tokenized_text)))
             else:
                 tokenized_text=tokenized_text[:self.max_length]
-            indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
+            indexed_tokens.append(self.tokenizer.convert_tokens_to_ids(tokenized_text))
 
-            segments_ids = [0]*self.max_length
+            segments_ids.append([0]*self.max_length)
 
-            # 将 inputs 转为 PyTorch tensors
-            tokens_tensor = torch.tensor([indexed_tokens])
-            # print(tokens_tensor.size())
-            segments_tensors = torch.tensor([segments_ids])
-            # print(segments_tensors.size())
-            tokens_tensor = tokens_tensor.to(device)
-            segments_tensors = segments_tensors.to(device)
+        # 将 inputs 转为 PyTorch tensors
+        tokens_tensor = torch.tensor(indexed_tokens)
+        # print(tokens_tensor.size())
+        segments_tensors = torch.tensor(segments_ids)
+        # print(segments_tensors.size())
+        tokens_tensor = tokens_tensor.to(device)
+        segments_tensors = segments_tensors.to(device)
 
-            # 得到每一层的 hidden states
-            with torch.no_grad():
-                encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
-            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
-        self.batch_bert=Variable(torch.cat(self.batch_bert,dim=0))
+        # 得到每一层的 hidden states
+        encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
+        fc=nn.Linear(768, 300).to(device)
+        self.batch_bert=nn.Tanh()(fc(Variable(encoded_layers)))
     def get_test_batch(self, batch):
         input_scope = self.data_test_scope[batch * self.batch_size : (batch + 1) * self.batch_size]
         index = []
@@ -257,31 +258,31 @@ class Config(object):
 
         batch_sentences = self.test_sentences[index]
         self.batch_bert = []
-        print("batch_sentences")
-        print(len(batch_sentences))
+        indexed_tokens = []
+        segments_ids = []
         for sen in batch_sentences:
             tokenized_text = self.tokenizer.tokenize(sen)
-            if len(tokenized_text) < self.max_length:
-                tokenized_text.extend(['[PAD]'] * (self.max_length - len(tokenized_text)))
+            if len(tokenized_text)<self.max_length:
+                tokenized_text.extend(['[PAD]']*(self.max_length-len(tokenized_text)))
             else:
-                tokenized_text = tokenized_text[:self.max_length]
-            indexed_tokens = self.tokenizer.convert_tokens_to_ids(tokenized_text)
+                tokenized_text=tokenized_text[:self.max_length]
+            indexed_tokens.append(self.tokenizer.convert_tokens_to_ids(tokenized_text))
 
-            segments_ids = [0] * self.max_length
+            segments_ids.append([0]*self.max_length)
 
-            # 将 inputs 转为 PyTorch tensors
-            tokens_tensor = torch.tensor([indexed_tokens])
-            # print(tokens_tensor.size())
-            segments_tensors = torch.tensor([segments_ids])
-            # print(segments_tensors.size())
-            tokens_tensor = tokens_tensor.to(device)
-            segments_tensors = segments_tensors.to(device)
+        # 将 inputs 转为 PyTorch tensors
+        tokens_tensor = torch.tensor(indexed_tokens)
+        # print(tokens_tensor.size())
+        segments_tensors = torch.tensor(segments_ids)
+        # print(segments_tensors.size())
+        tokens_tensor = tokens_tensor.to(device)
+        segments_tensors = segments_tensors.to(device)
 
-            # 得到每一层的 hidden states
-            with torch.no_grad():
-                encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
-            self.batch_bert.append(encoded_layers.squeeze(0)[-1].unsqueeze(0))
-        self.batch_bert = Variable(torch.cat(self.batch_bert, dim=0))
+        # 得到每一层的 hidden states
+        with torch.no_grad():
+            encoded_layers, _ = self.bert_model(tokens_tensor, segments_tensors, output_all_encoded_layers=False)
+        fc=nn.Linear(768, 300).to(device)
+        self.batch_bert=nn.Tanh()(fc(Variable(encoded_layers)))
 
     def train_one_step(self):
         self.trainModel.embedding.word = to_var(self.batch_word)
@@ -338,6 +339,11 @@ class Config(object):
             for batch in range(self.train_batches):
                 # print('total batches:{} now batch:{}'.format(self.train_batches,batch))
                 self.get_train_batch(batch)
+                if epoch==0 and batch==0:
+                    self.diff_bert=self.batch_bert
+                if batch==0:
+                    print(self.batch_bert)
+
                 loss = self.train_one_step()
                 time_str = datetime.datetime.now().isoformat()
                 sys.stdout.write("epoch %d step %d time %s | loss: %f, NA accuracy: %f, not NA accuracy: %f, total accuracy: %f\r" % (epoch, batch, time_str, loss, self.acc_NA.get(), self.acc_not_NA.get(), self.acc_total.get()))    

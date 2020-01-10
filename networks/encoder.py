@@ -11,8 +11,8 @@ class _CNN(nn.Module):
 		self.config = config
 		self.in_channels = 1
 		self.in_height = self.config.max_length
-		# self.in_width = 768
-		self.in_width = self.config.word_size + 2 * self.config.pos_size
+		self.in_width = 300
+		# self.in_width = self.config.word_size + 2 * self.config.pos_size
 		self.kernel_size = (self.config.window_size, self.in_width)
 		self.out_channels = self.config.hidden_size
 		self.stride = (1, 1)
@@ -57,7 +57,8 @@ class PCNN(nn.Module):
 		# x=torch.cat([x,self.config.batch_lstm_out],1)
 		# print("after PCNN size")
 		# print(x.size())
-		return self.activation(torch.cat((x,self.config.batch_bert),dim=1))
+		# return self.activation(torch.cat((x,self.config.batch_bert),dim=1))
+		return self.activation(x)
 
 class CNN(nn.Module):
 	def __init__(self, config):
